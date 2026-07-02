@@ -248,36 +248,41 @@ export async function exploreChapters(req, res, next) {
 
 export async function getFeatured(_req, res, next) {
   try {
-    const { data, error } = await supabase
-      .from('chapters')
+    // Try featured chapter first
+    let { data, error } = await supabase
+      .from("chapters")
       .select(CHAPTER_LIST_FIELDS)
-      .eq('status', 'published')
-      .eq('is_featured', true)
-      .order('published_at', { ascending: false })
+      .eq("status", "published")
+      .eq("is_featured", true)
+      .order("published_at", { ascending: false })
       .limit(1)
       .maybeSingle();
+
     if (error) throw error;
-    res.json({ chapter: data });
+
+    // If none exists, return latest published chapter
+    if (!data) {
+      const { data: latest, error: latestError } = await supabase
+        .from("chapters")
+        .select(CHAPTER_LIST_FIELDS)
+        .eq("status", "published")
+        .order("published_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (latestError) throw latestError;
+
+      data = latest;
+    }
+
+    res.json({
+      chapter: data,
+    });
+
   } catch (err) {
     next(err);
   }
 }
-
-export async function getTrending(_req, res, next) {
-  try {
-    const { data, error } = await supabase
-      .from('chapters')
-      .select(CHAPTER_LIST_FIELDS)
-      .eq('status', 'published')
-      .order('views_count', { ascending: false })
-      .limit(8);
-    if (error) throw error;
-    res.json({ chapters: data });
-  } catch (err) {
-    next(err);
-  }
-}
-
 // ---------------------------------------------------------------------------
 // My chapters (dashboard)
 // ---------------------------------------------------------------------------
