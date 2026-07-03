@@ -470,4 +470,22 @@ export async function getChapterBySlug(req, res, next) {
   } catch (err) {
     next(err);
   }
+}export async function getTrending(req, res, next) {
+  try {
+    const { data, error } = await supabase
+      .from("chapters")
+      .select(CHAPTER_LIST_FIELDS)
+      .eq("status", "published")
+      .order("views_count", { ascending: false })
+      .order("likes_count", { ascending: false })
+      .limit(10);
+
+    if (error) throw error;
+
+    res.json({
+      chapters: data,
+    });
+  } catch (err) {
+    next(err);
+  }
 }
