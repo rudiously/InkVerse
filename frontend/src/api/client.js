@@ -5,7 +5,6 @@ const api = axios.create({
   withCredentials: true,
 });
 
-export default api;
 let accessToken = null;
 export function setAccessToken(token) {
   accessToken = token;
